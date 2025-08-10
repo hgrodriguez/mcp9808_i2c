@@ -127,6 +127,8 @@ package MCP9808_I2C is
       Status : out Op_Status;
       Temp   : out Celsius);
 
+   --------------------------------------------------------------------------
+   --  Locking the Lower/Upper temperature settings
    procedure Lock_Lower_Upper_Window
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status);
@@ -166,6 +168,22 @@ package MCP9808_I2C is
       Status : out Op_Status;
       A_Status : out Ambient_Status;
       Temp   : out Celsius);
+
+   ---------------------------------------------------------------------------
+   --  Procedures/functions for shutdown/wakeup.
+   procedure Shutdown
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Shutdown
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
+   procedure Wakeup
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Awake
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
 
    ---------------------------------------------------------------------------
    --  Functions, which return some internal chip data.
