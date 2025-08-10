@@ -113,7 +113,6 @@ package body Critical_Tests is
 
       Temp_Prev  : Celsius;
       Temp_Limit : Celsius;
-      LOWER_CRITICAL_LIMIT : constant Celsius := CRITICAL_LIMIT / 2;
 
       use AUnit.Assertions;
    begin

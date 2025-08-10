@@ -127,6 +127,10 @@ package MCP9808_I2C is
       Status : out Op_Status;
       Temp   : out Celsius);
 
+   procedure Lock_Lower_Upper_Window
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+
    --------------------------------------------------------------------------
    --  Critical Temperature Limit procedures
    procedure Set_Critical_Temperature

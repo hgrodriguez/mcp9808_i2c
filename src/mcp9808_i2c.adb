@@ -383,6 +383,53 @@ package body MCP9808_I2C is
                            Temp              => Temp);
    end Get_Lower_Temperature;
 
+   procedure Lock_Lower_Upper_Window
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_WINDOW_LOCK := 1;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Lock_Lower_Upper_Window;
+
    procedure Set_Critical_Temperature
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status;
