@@ -7,6 +7,14 @@ with Shared_Code;
 
 package body Upper_Tests is
 
+   --------------------------------------------------------------------------
+   --  all tests implemented
+   --------------------------------------------------------------------------
+   procedure Test_POR
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+   procedure Test_Limit
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+
    Status : Op_Status;
 
    overriding
@@ -17,6 +25,24 @@ package body Upper_Tests is
       Shared_Code.Initialize;
    end Set_Up;
 
+   --------------------------------------------------------------------------
+   overriding
+   procedure Register_Tests
+     (T : in out Upper_Test)
+   is
+      use AUnit.Test_Cases.Registration;
+   begin
+      Register_Routine (T, Test_POR'Access, "Upper POR");
+      Register_Routine (T, Test_Limit'Access, "Upper Limit");
+   end Register_Tests;
+
+   overriding
+   function Name
+     (T : Upper_Test)
+      return AUnit.Message_String
+   is (AUnit.Format ("Upper_Tests"));
+
+   --------------------------------------------------------------------------
    procedure Test_POR
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -32,6 +58,7 @@ package body Upper_Tests is
       Assert (Temp = UPPER_POR, "Upper: POR /= 0:" & Temp'Image);
    end Test_POR;
 
+   --------------------------------------------------------------------------
    procedure Test_Limit
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -69,21 +96,5 @@ package body Upper_Tests is
               & " /= Temp Limit Set="
               & UPPER_LIMIT'Image);
    end Test_Limit;
-
-   overriding
-   procedure Register_Tests
-     (T : in out Upper_Test)
-   is
-      use AUnit.Test_Cases.Registration;
-   begin
-      Register_Routine (T, Test_POR'Access, "Upper POR");
-      Register_Routine (T, Test_Limit'Access, "Upper Limit");
-   end Register_Tests;
-
-   overriding
-   function Name
-     (T : Upper_Test)
-       return AUnit.Message_String
-   is (AUnit.Format ("Upper_Tests"));
 
 end Upper_Tests;

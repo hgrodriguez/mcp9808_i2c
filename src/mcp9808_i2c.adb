@@ -15,6 +15,58 @@ with Ada.Unchecked_Conversion;
 package body MCP9808_I2C is
 
    --------------------------------------------------------------------------
+   --  all register pointers available, only used internally
+   RP_CONFIG              : constant UInt8 := 2#0000_0001#;
+   RP_MANUFACTURER_ID     : constant UInt8 := 2#0000_0110#;
+   RP_DEVICE_ID_REVISION  : constant UInt8 := 2#0000_0111#;
+   RP_RESOLUTION          : constant UInt8 := 2#0000_1000#;
+
+   --------------------------------------------------------------------------
+   --  definition of the configuration register
+   type Alert_Control is (Disabled,
+                          Enabled) with Size => 1;
+   for Alert_Control use (Disabled => 0,
+                          Enabled => 1);
+   type Alert_Output_Select is (All_Limits,
+                                TA_GT_TCRIT_ONLY) with Size => 1;
+   for Alert_Output_Select use (All_Limits => 0,
+                                TA_GT_TCRIT_ONLY => 1);
+   type Alert_Polarity is (Active_Low,
+                           Active_High) with Size => 1;
+   for Alert_Polarity use (Active_Low => 0,
+                           Active_High => 1);
+   type Alert_Output_Mode is (Comparator,
+                              Interrupt) with Size => 1;
+   for Alert_Output_Mode use (Comparator => 0,
+                              Interrupt => 1);
+   type CONFIG_REGISTER is record
+      UNIMPLEMENTED        : UInt5;
+      CR_HYSTERESIS        : UInt2;
+      CR_SHUTDOWN          : Bit;
+      CR_CRIT_LOCK         : Bit;
+      CR_WINDOW_LOCK       : Bit;
+      CR_INTERRUPT_CLEAR   : Bit;
+      CR_ALERT_STATUS      : Bit;
+      CR_ALERT_CONTROL     : Alert_Control;
+      CD_ALERT_SELECT      : Alert_Output_Select;
+      CR_ALERT_POLARITY    : Alert_Polarity;
+      CR_ALERT_OUTPUT_MODE : Alert_Output_Mode;
+   end record;
+   for CONFIG_REGISTER use record
+      UNIMPLEMENTED        at 0 range 11 .. 15;
+      CR_HYSTERESIS        at 0 range 9 .. 10;
+      CR_SHUTDOWN          at 0 range 8 .. 8;
+      CR_CRIT_LOCK         at 0 range 7 .. 7;
+      CR_WINDOW_LOCK       at 0 range 6 .. 6;
+      CR_INTERRUPT_CLEAR   at 0 range 5 .. 5;
+      CR_ALERT_STATUS      at 0 range 4 .. 4;
+      CR_ALERT_CONTROL     at 0 range 3 .. 3;
+      CD_ALERT_SELECT      at 0 range 2 .. 2;
+      CR_ALERT_POLARITY    at 0 range 1 .. 1;
+      CR_ALERT_OUTPUT_MODE at 0 range 0 .. 0;
+   end record;
+
+   --------------------------------------------------------------------------
    --  definition of a temperature register.
    --  I silently ignore the difference between the
    --  register: Ambient Temperature
@@ -86,7 +138,7 @@ package body MCP9808_I2C is
      (This      : in out MCP9808_I2C_Port;
       Port      : Any_I2C_Port;
       Address   : I2C_Address := I2C_DEFAULT_ADDRESS;
---    Alert_Pin : not null GPIO.Any_GPIO_Point;
+      --    Alert_Pin : not null GPIO.Any_GPIO_Point;
       Status    : out Op_Status) is
 
    begin
@@ -96,6 +148,84 @@ package body MCP9808_I2C is
       This.Port := Port;
       This.Address := Address;
    end Configure;
+
+   procedure Get_Config_Register (This   : in out MCP9808_I2C_Port;
+                                  Status : out Op_Status;
+                                  C_R    : out CONFIG_REGISTER);
+
+   procedure Get_Hysteresis (This   : in out MCP9808_I2C_Port;
+                             Status : out Op_Status;
+                             Hyst   : out Hysteresis) is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         Hyst := Zero;
+         return;
+      end if;
+
+      case C_R.CR_HYSTERESIS is
+         when 2#00# => Hyst := Zero;
+         when 2#01# => Hyst := One_Half;
+         when 2#10# => Hyst := Three;
+         when 2#11# => Hyst := Six;
+      end case;
+   end Get_Hysteresis;
+
+   procedure Set_Hysteresis (This   : in out MCP9808_I2C_Port;
+                             Status : out Op_Status;
+                             Hyst   : Hysteresis) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+           others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      case Hyst is
+         when Zero => C_R.CR_HYSTERESIS := 2#00#;
+         when One_Half => C_R.CR_HYSTERESIS := 2#01#;
+         when Three => C_R.CR_HYSTERESIS := 2#10#;
+         when Six => C_R.CR_HYSTERESIS := 2#11#;
+      end case;
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Set_Hysteresis;
 
    procedure Set_Resolution
      (This       : in out MCP9808_I2C_Port;
@@ -170,8 +300,8 @@ package body MCP9808_I2C is
    procedure Set_Any_Temperature
      (RP_REGISTER : UInt8;
       This        : in out MCP9808_I2C_Port;
-      Status : out Op_Status;
-      Temp   : Celsius) is
+      Status      : out Op_Status;
+      Temp        : Celsius) is
 
       Reg_Ptr_Data                : I2C.I2C_Data (1 .. 3)
         := (1 => RP_REGISTER,
@@ -274,6 +404,53 @@ package body MCP9808_I2C is
                            Status            => Status,
                            Temp              => Temp);
    end Get_Critical_Temperature;
+
+   procedure Lock_Critical_Temperature
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_CRIT_LOCK := 1;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Lock_Critical_Temperature;
 
    procedure Get_Ambient_Temperature
      (This     : in out MCP9808_I2C_Port;
@@ -497,5 +674,46 @@ package body MCP9808_I2C is
 
    function Div_Fraction_C (V : Celsius) return UInt4
    is (UInt4 ((V - Celsius (Div_Integer_C (V))) * 2 ** 4));
+
+   procedure Get_Config_Register (This   : in out MCP9808_I2C_Port;
+                                  Status : out Op_Status;
+                                  C_R    : out CONFIG_REGISTER) is
+
+      Data_T                : constant I2C.I2C_Data (1 .. 1)
+        := (1 => RP_CONFIG);
+      Data_R                : I2C.I2C_Data (1 .. 2) := (others => 0);
+      I2C_Status            : I2C.I2C_Status;
+
+      function To_Config is
+        new Ada.Unchecked_Conversion (UInt16, CONFIG_REGISTER);
+
+   begin
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+
+      This.Port.all.Master_Receive (Addr    => This.Address,
+                                    Data    => Data_R,
+                                    Status  => I2C_Status,
+                                    Timeout => 1000);
+
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+
+      C_R := To_Config (Shift_Left (UInt16 (Data_R (1)), 8)
+                        or UInt16 (Data_R (2)));
+   end Get_Config_Register;
 
 end MCP9808_I2C;

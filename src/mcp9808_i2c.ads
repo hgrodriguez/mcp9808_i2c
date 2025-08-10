@@ -44,8 +44,28 @@ package MCP9808_I2C is
      (This      : in out MCP9808_I2C_Port;
       Port      : Any_I2C_Port;
       Address   : I2C_Address := I2C_DEFAULT_ADDRESS;
---    Alert_Pin : not null HAL.GPIO.Any_GPIO_Point;
       Status    : out Op_Status);
+
+   ---------------------------------------------------------------------------
+   --  Defines the possible hysteresis settings the sensor is capable of.
+   type Hysteresis is (Zero,
+                       One_Half,
+                       Three,
+                      Six);
+   for Hysteresis use
+     (Zero     => 2#00#,
+      One_Half => 2#01#,
+      Three    => 2#10#,
+      Six      => 2#11#
+     );
+
+   procedure Get_Hysteresis (This   : in out MCP9808_I2C_Port;
+                             Status : out Op_Status;
+                             Hyst   : out Hysteresis);
+
+   procedure Set_Hysteresis (This   : in out MCP9808_I2C_Port;
+                             Status : out Op_Status;
+                             Hyst   : Hysteresis);
 
    ---------------------------------------------------------------------------
    --  Defines the possible resolutions the sensor is capable of.
@@ -119,6 +139,10 @@ package MCP9808_I2C is
       Status : out Op_Status;
       Temp   : out Celsius);
 
+   procedure Lock_Critical_Temperature
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+
    ---------------------------------------------------------------------------
    --  Flags for the ambient temperature values.
    --  GorE_Upper:
@@ -160,25 +184,14 @@ private
       Port      : Any_I2C_Port;
       --  the I2C address of the temperature sensor on Port
       Address   : I2C_Address;
-      --  the GPIO pin to be used for the alerting
-      --  Alert_Pin : HAL.GPIO.Any_GPIO_Point;
    end record;
 
    --------------------------------------------------------------------------
    --  all register pointers available
-   --  this is reserved for future use.
-   --  RP_RFU                 : constant UInt8 := 2#0000_0000#;
-
-   RP_CONFIG              : constant UInt8 := 2#0000_0001#;
-   pragma Warnings (Off, RP_CONFIG);
-
-   RP_T_UPPER             : constant UInt8 := 2#0000_0010#;
-   RP_T_LOWER             : constant UInt8 := 2#0000_0011#;
-   RP_T_CRIT              : constant UInt8 := 2#0000_0100#;
-   RP_T_A                 : constant UInt8 := 2#0000_0101#;
-   RP_MANUFACTURER_ID     : constant UInt8 := 2#0000_0110#;
-   RP_DEVICE_ID_REVISION  : constant UInt8 := 2#0000_0111#;
-   RP_RESOLUTION          : constant UInt8 := 2#0000_1000#;
+   RP_T_UPPER : constant UInt8 := 2#0000_0010#;
+   RP_T_LOWER : constant UInt8 := 2#0000_0011#;
+   RP_T_CRIT  : constant UInt8 := 2#0000_0100#;
+   RP_T_A     : constant UInt8 := 2#0000_0101#;
 
    function Div_Integer_C (V : Celsius) return UInt8;
    function Div_Fraction_C (V : Celsius) return UInt4;

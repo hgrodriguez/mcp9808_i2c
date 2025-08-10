@@ -17,7 +17,7 @@ project Mcp9808_I2c is
 type Enabled_Kind is ("enabled", "disabled");
   Compile_Checks : Enabled_Kind := External ("MCP9808_I2C_COMPILE_CHECKS", "enabled");
   Runtime_Checks : Enabled_Kind := External ("MCP9808_I2C_RUNTIME_CHECKS", "disabled");
-  Style_Checks : Enabled_Kind := External ("MCP9808_I2C_STYLE_CHECKS", "disabled");
+  Style_Checks : Enabled_Kind := External ("MCP9808_I2C_STYLE_CHECKS", "enabled");
   Contracts_Checks : Enabled_Kind := External ("MCP9808_I2C_CONTRACTS", "disabled");
   
  type Build_Kind is ("debug", "optimize");

@@ -6,6 +6,21 @@ with Configuration; use Configuration;
 with Shared_Code;
 
 package body Resolution_Tests is
+
+   --------------------------------------------------------------------------
+   --  all tests implemented
+   --------------------------------------------------------------------------
+   procedure Test_POR
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+   procedure Test_Half
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+   procedure Test_Quarter
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+   procedure Test_Eighth
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+   procedure Test_Sixteenth
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+
    Status : Op_Status;
 
    overriding
@@ -16,6 +31,26 @@ package body Resolution_Tests is
       Shared_Code.Initialize;
    end Set_Up;
 
+   overriding
+   procedure Register_Tests
+     (T : in out Resolution_Test)
+   is
+      use AUnit.Test_Cases.Registration;
+   begin
+      Register_Routine (T, Test_POR'Access, "Resolution POR");
+      Register_Routine (T, Test_Half'Access, "Resolution Half");
+      Register_Routine (T, Test_Quarter'Access, "Resolution Quarter");
+      Register_Routine (T, Test_Eighth'Access, "Resolution Eighth");
+      Register_Routine (T, Test_Sixteenth'Access, "Resolution Sixteenth");
+   end Register_Tests;
+
+   overriding
+   function Name
+     (T : Resolution_Test)
+      return AUnit.Message_String
+   is (AUnit.Format ("Resolution_Tests"));
+
+   --------------------------------------------------------------------------
    procedure Test_POR
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -34,6 +69,7 @@ package body Resolution_Tests is
               & R'Image);
    end Test_POR;
 
+   --------------------------------------------------------------------------
    procedure Test_Half
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -73,6 +109,7 @@ package body Resolution_Tests is
               & RESOLUTION_VAL'Image);
    end Test_Half;
 
+   --------------------------------------------------------------------------
    procedure Test_Quarter
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -112,6 +149,7 @@ package body Resolution_Tests is
               & RESOLUTION_VAL'Image);
    end Test_Quarter;
 
+   --------------------------------------------------------------------------
    procedure Test_Eighth
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -151,6 +189,7 @@ package body Resolution_Tests is
               & RESOLUTION_VAL'Image);
    end Test_Eighth;
 
+   --------------------------------------------------------------------------
    procedure Test_Sixteenth
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -189,24 +228,5 @@ package body Resolution_Tests is
               & " /= Resolution Set="
               & RESOLUTION_VAL'Image);
    end Test_Sixteenth;
-
-   overriding
-   procedure Register_Tests
-     (T : in out Resolution_Test)
-   is
-      use AUnit.Test_Cases.Registration;
-   begin
-      Register_Routine (T, Test_POR'Access, "Resolution POR");
-      Register_Routine (T, Test_Half'Access, "Resolution Half");
-      Register_Routine (T, Test_Quarter'Access, "Resolution Quarter");
-      Register_Routine (T, Test_Eighth'Access, "Resolution Eighth");
-      Register_Routine (T, Test_Sixteenth'Access, "Resolution Sixteenth");
-   end Register_Tests;
-
-   overriding
-   function Name
-     (T : Resolution_Test)
-      return AUnit.Message_String
-   is (AUnit.Format ("Resolution_Tests"));
 
 end Resolution_Tests;

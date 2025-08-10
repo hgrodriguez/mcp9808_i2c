@@ -6,6 +6,15 @@ with Configuration; use Configuration;
 with Shared_Code;
 
 package body Lower_Tests is
+
+   --------------------------------------------------------------------------
+   --  all tests implemented
+   --------------------------------------------------------------------------
+   procedure Test_POR
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+   procedure Test_Limit
+     (T : in out AUnit.Test_Cases.Test_Case'Class);
+
    Status : Op_Status;
 
    overriding
@@ -16,6 +25,23 @@ package body Lower_Tests is
       Shared_Code.Initialize;
    end Set_Up;
 
+   overriding
+   procedure Register_Tests
+     (T : in out Lower_Test)
+   is
+      use AUnit.Test_Cases.Registration;
+   begin
+      Register_Routine (T, Test_POR'Access, "Lower POR");
+      Register_Routine (T, Test_Limit'Access, "Lower Limit");
+   end Register_Tests;
+
+   overriding
+   function Name
+     (T : Lower_Test)
+      return AUnit.Message_String
+   is (AUnit.Format ("Lower_Tests"));
+
+   --------------------------------------------------------------------------
    procedure Test_POR
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -31,6 +57,7 @@ package body Lower_Tests is
       Assert (Temp = LOWER_POR, "Lower: POR /= 0:" & Temp'Image);
    end Test_POR;
 
+   --------------------------------------------------------------------------
    procedure Test_Limit
      (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
@@ -68,21 +95,5 @@ package body Lower_Tests is
               & " /= Temp Limit Set="
               & LOWER_LIMIT'Image);
    end Test_Limit;
-
-   overriding
-   procedure Register_Tests
-     (T : in out Lower_Test)
-   is
-      use AUnit.Test_Cases.Registration;
-   begin
-      Register_Routine (T, Test_POR'Access, "Lower POR");
-      Register_Routine (T, Test_Limit'Access, "Lower Limit");
-   end Register_Tests;
-
-   overriding
-   function Name
-     (T : Lower_Test)
-      return AUnit.Message_String
-   is (AUnit.Format ("Lower_Tests"));
 
 end Lower_Tests;
