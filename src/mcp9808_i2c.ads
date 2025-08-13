@@ -222,6 +222,20 @@ package MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) return Boolean;
 
+   procedure Set_Alert_Polarity_Low
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Alert_Polarity_Low
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
+   procedure Set_Alert_Polarity_High
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Alert_Polarity_High
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
    ---------------------------------------------------------------------------
    --  Functions, which return some internal chip data.
    function Get_Manufacturer_Id

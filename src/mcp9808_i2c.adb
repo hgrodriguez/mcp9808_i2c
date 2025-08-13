@@ -134,6 +134,7 @@ package body MCP9808_I2C is
    function Data_R_To_Celsius (Data_R : I2C_Data) return Celsius;
    function Celsius_To_Register (Temp_In_Celsius : Celsius)
                                  return TEMPERATURE_REGISTER;
+   ---------------------------------------------------------------------------
    procedure Configure
      (This      : in out MCP9808_I2C_Port;
       Port      : Any_I2C_Port;
@@ -149,10 +150,12 @@ package body MCP9808_I2C is
       This.Address := Address;
    end Configure;
 
+   ---------------------------------------------------------------------------
    procedure Get_Config_Register (This   : in out MCP9808_I2C_Port;
                                   Status : out Op_Status;
                                   C_R    : out CONFIG_REGISTER);
 
+   ---------------------------------------------------------------------------
    procedure Get_Hysteresis (This   : in out MCP9808_I2C_Port;
                              Status : out Op_Status;
                              Hyst   : out Hysteresis) is
@@ -176,6 +179,7 @@ package body MCP9808_I2C is
       end case;
    end Get_Hysteresis;
 
+   ---------------------------------------------------------------------------
    procedure Set_Hysteresis (This   : in out MCP9808_I2C_Port;
                              Status : out Op_Status;
                              Hyst   : Hysteresis) is
@@ -227,6 +231,7 @@ package body MCP9808_I2C is
       end if;
    end Set_Hysteresis;
 
+   ---------------------------------------------------------------------------
    procedure Set_Resolution
      (This       : in out MCP9808_I2C_Port;
       Res        : Resolution;
@@ -254,6 +259,7 @@ package body MCP9808_I2C is
       end if;
    end Set_Resolution;
 
+   ---------------------------------------------------------------------------
    procedure Get_Resolution
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status;
@@ -297,6 +303,7 @@ package body MCP9808_I2C is
       Res := To_Resolution (Data_R (1));
    end Get_Resolution;
 
+   ---------------------------------------------------------------------------
    procedure Set_Any_Temperature
      (RP_REGISTER : UInt8;
       This        : in out MCP9808_I2C_Port;
@@ -339,6 +346,7 @@ package body MCP9808_I2C is
       end if;
    end Set_Any_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Set_Upper_Temperature
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status;
@@ -350,6 +358,7 @@ package body MCP9808_I2C is
                            Temp        => Temp);
    end Set_Upper_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Get_Upper_Temperature
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status;
@@ -361,6 +370,7 @@ package body MCP9808_I2C is
                            Temp              => Temp);
    end Get_Upper_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Set_Lower_Temperature
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status;
@@ -372,6 +382,7 @@ package body MCP9808_I2C is
                            Temp        => Temp);
    end Set_Lower_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Get_Lower_Temperature
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status;
@@ -383,6 +394,7 @@ package body MCP9808_I2C is
                            Temp              => Temp);
    end Get_Lower_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Lock_Lower_Upper_Window
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
@@ -430,6 +442,7 @@ package body MCP9808_I2C is
       end if;
    end Lock_Lower_Upper_Window;
 
+   ---------------------------------------------------------------------------
    procedure Set_Critical_Temperature
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status;
@@ -441,6 +454,7 @@ package body MCP9808_I2C is
                            Temp        => Temp);
    end Set_Critical_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Get_Critical_Temperature
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status;
@@ -452,6 +466,7 @@ package body MCP9808_I2C is
                            Temp              => Temp);
    end Get_Critical_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Lock_Critical_Temperature
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
@@ -499,6 +514,7 @@ package body MCP9808_I2C is
       end if;
    end Lock_Critical_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Get_Ambient_Temperature
      (This     : in out MCP9808_I2C_Port;
       Status   : out Op_Status;
@@ -543,6 +559,7 @@ package body MCP9808_I2C is
       Temp := Data_R_To_Celsius (Data_R => Data_R);
    end Get_Ambient_Temperature;
 
+   ---------------------------------------------------------------------------
    procedure Shutdown
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
@@ -590,6 +607,7 @@ package body MCP9808_I2C is
       end if;
    end Shutdown;
 
+   ---------------------------------------------------------------------------
    function Is_Shutdown
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) return Boolean is
@@ -607,6 +625,7 @@ package body MCP9808_I2C is
       return C_R.CR_SHUTDOWN = 1;
    end Is_Shutdown;
 
+   ---------------------------------------------------------------------------
    procedure Wakeup
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
@@ -1003,6 +1022,138 @@ package body MCP9808_I2C is
       return C_R.CR_ALERT_CONTROL = Disabled;
    end Is_Alert_Output_Disabled;
 
+   ---------------------------------------------------------------------------
+   procedure Set_Alert_Polarity_Low
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_POLARITY := Active_Low;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Set_Alert_Polarity_Low;
+
+   ---------------------------------------------------------------------------
+   function Is_Alert_Polarity_Low
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_ALERT_POLARITY = Active_Low;
+   end Is_Alert_Polarity_Low;
+
+   ---------------------------------------------------------------------------
+   procedure Set_Alert_Polarity_High
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_POLARITY := Active_High;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Set_Alert_Polarity_High;
+
+   ---------------------------------------------------------------------------
+   function Is_Alert_Polarity_High
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_ALERT_POLARITY = Active_High;
+   end Is_Alert_Polarity_High;
+
    function Get_Manufacturer_Id
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) return UInt16 is
@@ -1093,6 +1244,7 @@ package body MCP9808_I2C is
       return Temp;
    end Data_R_To_Celsius;
 
+   ---------------------------------------------------------------------------
    procedure Get_Any_Temperature
      (RP_REGISTER : UInt8;
       This        : in out MCP9808_I2C_Port;
@@ -1112,6 +1264,7 @@ package body MCP9808_I2C is
       Temp := Data_R_To_Celsius (Data_R => Data_R);
    end Get_Any_Temperature;
 
+   ---------------------------------------------------------------------------
    function Celsius_To_Register (Temp_In_Celsius : Celsius)
                                  return TEMPERATURE_REGISTER is
 
@@ -1134,6 +1287,7 @@ package body MCP9808_I2C is
       return L_Register;
    end Celsius_To_Register;
 
+   ---------------------------------------------------------------------------
    procedure Read_Register_As_Data_R_2
      (RP_REGISTER           : UInt8;
       This                  : in out MCP9808_I2C_Port;
@@ -1168,6 +1322,7 @@ package body MCP9808_I2C is
       end if;
    end Read_Register_As_Data_R_2;
 
+   ---------------------------------------------------------------------------
    function Div_Integer_C (V : Celsius) return UInt8
    is
       I : constant Integer := Integer (V);
@@ -1179,9 +1334,11 @@ package body MCP9808_I2C is
       end if;
    end Div_Integer_C;
 
+   ---------------------------------------------------------------------------
    function Div_Fraction_C (V : Celsius) return UInt4
    is (UInt4 ((V - Celsius (Div_Integer_C (V))) * 2 ** 4));
 
+   ---------------------------------------------------------------------------
    procedure Get_Config_Register (This   : in out MCP9808_I2C_Port;
                                   Status : out Op_Status;
                                   C_R    : out CONFIG_REGISTER) is
