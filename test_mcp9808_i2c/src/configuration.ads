@@ -29,4 +29,5 @@ package Configuration is
 
    RESOLUTION_POR : constant Resolution := Sixteenth;
 
+   Alert_Pin : RP.GPIO.GPIO_Point renames Pico.GP6;
 end Configuration;

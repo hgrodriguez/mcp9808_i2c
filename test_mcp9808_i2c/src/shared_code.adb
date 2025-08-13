@@ -33,9 +33,12 @@ package body Shared_Code is
         (This      => Temp_Sensor_Device,
          Port      => Temp_Sensor_Port'Unchecked_Access,
          Address   => I2C_DEFAULT_ADDRESS,
-         --       Alert_Pin => Alert_Pin'Unchecked_Access,
          Status => Status);
 
+      RP.GPIO.Configure (This      => Alert_Pin,
+                         Mode      => RP.GPIO.Input,
+                         Pull      => RP.GPIO.Pull_Up,
+                         Func      => RP.GPIO.SIO);
    end Initialize;
 
 end Shared_Code;

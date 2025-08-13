@@ -48,7 +48,7 @@ package body MCP9808_I2C is
       CR_INTERRUPT_CLEAR   : Bit;
       CR_ALERT_STATUS      : Bit;
       CR_ALERT_CONTROL     : Alert_Control;
-      CD_ALERT_SELECT      : Alert_Output_Select;
+      CR_ALERT_SELECT      : Alert_Output_Select;
       CR_ALERT_POLARITY    : Alert_Polarity;
       CR_ALERT_OUTPUT_MODE : Alert_Output_Mode;
    end record;
@@ -61,7 +61,7 @@ package body MCP9808_I2C is
       CR_INTERRUPT_CLEAR   at 0 range 5 .. 5;
       CR_ALERT_STATUS      at 0 range 4 .. 4;
       CR_ALERT_CONTROL     at 0 range 3 .. 3;
-      CD_ALERT_SELECT      at 0 range 2 .. 2;
+      CR_ALERT_SELECT      at 0 range 2 .. 2;
       CR_ALERT_POLARITY    at 0 range 1 .. 1;
       CR_ALERT_OUTPUT_MODE at 0 range 0 .. 0;
    end record;
@@ -654,6 +654,7 @@ package body MCP9808_I2C is
       end if;
    end Wakeup;
 
+   ---------------------------------------------------------------------------
    function Is_Awake
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) return Boolean is
@@ -670,6 +671,337 @@ package body MCP9808_I2C is
 
       return C_R.CR_SHUTDOWN = 0;
    end Is_Awake;
+
+   ---------------------------------------------------------------------------
+   procedure Set_Alert_As_Comparator
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_OUTPUT_MODE := Comparator;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Set_Alert_As_Comparator;
+
+   ---------------------------------------------------------------------------
+   function Is_Alert_Comparator
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_ALERT_OUTPUT_MODE = Comparator;
+   end Is_Alert_Comparator;
+
+   ---------------------------------------------------------------------------
+   procedure Alert_All_Limits
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_SELECT := All_Limits;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Alert_All_Limits;
+
+   ---------------------------------------------------------------------------
+   function Is_Alert_All_Limits
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_ALERT_SELECT = All_Limits;
+   end Is_Alert_All_Limits;
+
+   ---------------------------------------------------------------------------
+   procedure Alert_Only_Critical
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_SELECT := TA_GT_TCRIT_ONLY;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Alert_Only_Critical;
+
+   ---------------------------------------------------------------------------
+   function Is_Alert_Only_Critical
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_ALERT_SELECT = All_Limits;
+   end Is_Alert_Only_Critical;
+
+   ---------------------------------------------------------------------------
+   procedure Enable_Alert_Output
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_CONTROL := Enabled;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+
+   end Enable_Alert_Output;
+
+   ---------------------------------------------------------------------------
+   function Is_Alert_Output_Enabled
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_ALERT_CONTROL = Enabled;
+   end Is_Alert_Output_Enabled;
+
+   ---------------------------------------------------------------------------
+   procedure Disable_Alert_Output
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      Data_T                : I2C.I2C_Data (1 .. 3)
+        := (1 => RP_CONFIG,
+            others => 0);
+      I2C_Status            : I2C.I2C_Status;
+      LSB                   : UInt8;
+      MSB                   : UInt8;
+      Word                  : UInt16;
+      C_R                   : CONFIG_REGISTER;
+
+      function To_UInt16 is
+        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_CONTROL := Disabled;
+
+      Word := To_UInt16 (C_R);
+      LSB := UInt8 (Word);
+      MSB := UInt8 (Shift_Right (Word, 8));
+
+      Data_T (2) := MSB;
+      Data_T (3) := LSB;
+
+      Status.I2C_Status := I2C.Ok;
+      Status.E_Status := Ok;
+
+      This.Port.all.Master_Transmit (Addr    => This.Address,
+                                     Data    => Data_T,
+                                     Status  => I2C_Status,
+                                     Timeout => 1000);
+      if I2C_Status /= I2C.Ok then
+         Status.I2C_Status := I2C_Status;
+         Status.E_Status := I2C_Not_Ok;
+         return;
+      end if;
+   end Disable_Alert_Output;
+
+   ---------------------------------------------------------------------------
+   function Is_Alert_Output_Disabled
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_ALERT_CONTROL = Disabled;
+   end Is_Alert_Output_Disabled;
 
    function Get_Manufacturer_Id
      (This   : in out MCP9808_I2C_Port;

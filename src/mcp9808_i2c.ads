@@ -186,6 +186,43 @@ package MCP9808_I2C is
       Status : out Op_Status) return Boolean;
 
    ---------------------------------------------------------------------------
+   --  Procedures/Functions, which are related to alerting
+   procedure Set_Alert_As_Comparator
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Alert_Comparator
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
+   procedure Alert_All_Limits
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Alert_All_Limits
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
+   procedure Alert_Only_Critical
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Alert_Only_Critical
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
+   procedure Enable_Alert_Output
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Alert_Output_Enabled
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
+   procedure Disable_Alert_Output
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Alert_Output_Disabled
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
+   ---------------------------------------------------------------------------
    --  Functions, which return some internal chip data.
    function Get_Manufacturer_Id
      (This   : in out MCP9808_I2C_Port;
