@@ -194,6 +194,13 @@ package MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) return Boolean;
 
+   procedure Set_Alert_As_Interrupt
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+   function Is_Alert_Interrupt
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
    procedure Alert_All_Limits
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status);
@@ -233,6 +240,14 @@ package MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status);
    function Is_Alert_Polarity_High
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean;
+
+   procedure Clear_Interrupt
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status);
+
+   function Is_Interrupt_Clear
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) return Boolean;
 

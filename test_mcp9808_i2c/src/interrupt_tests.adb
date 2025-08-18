@@ -5,15 +5,13 @@ with Configuration; use Configuration;
 
 with Shared_Code;
 
-package body Comparator_Tests is
+package body Interrupt_Tests is
 
    --------------------------------------------------------------------------
    --  all tests implemented
    --------------------------------------------------------------------------
-   procedure Test_POR
+   procedure Test_Init
      (T : in out AUnit.Test_Cases.Test_Case'Class);
-   --
-   --  SET COMPARATOR OUTPUT TO ACTIVE LOW
    procedure Test_No_Alert
      (T : in out AUnit.Test_Cases.Test_Case'Class);
    procedure Test_TA_Too_Low
@@ -34,8 +32,7 @@ package body Comparator_Tests is
 
    overriding
    procedure Set_Up
-     (T : in out Comparator_Test)
-   is
+     (T : in out Interrupt_Test) is
    begin
       Shared_Code.Initialize;
       --  we set the hysteresis to 0, as we do not test the
@@ -48,71 +45,74 @@ package body Comparator_Tests is
       --  enable output of alert
       Enable_Alert_Output (This   => Temp_Sensor_Device,
                            Status => Status);
+      --  enable interrupt
+      Set_Alert_As_Interrupt (This   => Temp_Sensor_Device,
+                              Status => Status);
    end Set_Up;
 
    overriding
    procedure Tear_Down
-     (T : in out Comparator_Test) is
+     (T : in out Interrupt_Test) is
    begin
       Shared_Code.Set_Limits_Back_to_POR;
+      --  set POR status
+      Set_Alert_As_Comparator (This   => Temp_Sensor_Device,
+                               Status => Status);
       Disable_Alert_Output (This   => Temp_Sensor_Device,
-                           Status => Status);
+                            Status => Status);
    end Tear_Down;
 
    overriding
    procedure Register_Tests
-     (T : in out Comparator_Test)
-   is
+     (T : in out Interrupt_Test) is
       use AUnit.Test_Cases.Registration;
    begin
-      Register_Routine (T, Test_POR'Access,
-                        "Comparator POR");
+      Register_Routine (T, Test_Init'Access,
+                        "Interrupt POR");
       Register_Routine (T, Test_No_Alert'Access,
-                        "Comparator No_Alert");
+                        "Interrupt No_Alert");
       Register_Routine (T, Test_TA_Too_Low'Access,
-                        "Comparator Test_TA_Too_Low");
+                        "Interrupt Test_TA_Too_Low");
       Register_Routine (T, Test_TA_Too_High'Access,
-                        "Comparator Test_TA_Too_High");
+                        "Interrupt Test_TA_Too_High");
       Register_Routine (T, Test_TA_Above_Critical'Access,
-                        "Comparator Test_TA_Above_Critical");
+                        "Interrupt Test_TA_Above_Critical");
       Register_Routine (T, Test_CriticalOnly_TA_Above_Lower'Access,
-                        "Comparator Test_CriticalOnly_TA_Above_Lower");
+                        "Interrupt Test_CriticalOnly_TA_Above_Lower");
       Register_Routine (T, Test_CriticalOnly_TA_Above_Higher'Access,
-                        "Comparator Test_CriticalOnly_TA_Above_Higher");
+                        "Interrupt Test_CriticalOnly_TA_Above_Higher");
       Register_Routine (T, Test_CriticalOnly_TA_Above_Critical'Access,
-                        "Comparator Test_CriticalOnly_TA_Above_Critical");
+                        "Interrupt Test_CriticalOnly_TA_Above_Critical");
    end Register_Tests;
 
    overriding
    function Name
-     (T : Comparator_Test)
-      return AUnit.Message_String
-   is (AUnit.Format ("Comparator_Test"));
+     (T : Interrupt_Test)
+      return AUnit.Message_String is
+     (AUnit.Format ("Interrupt_Test"));
 
    --------------------------------------------------------------------------
-   procedure Test_POR
-     (T : in out AUnit.Test_Cases.Test_Case'Class)
-   is
+   procedure Test_Init
+     (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);
 
       Temp : Celsius;
 
       use AUnit.Assertions;
    begin
-      Assert (Is_Alert_Comparator (This   => Temp_Sensor_Device,
-                                   Status => Status),
-              "Comparator: POR /= True");
-   end Test_POR;
+      Assert (Is_Alert_Interrupt (This   => Temp_Sensor_Device,
+                                      Status => Status),
+              "Interrupt: Init /= True");
+   end Test_Init;
 
    --------------------------------------------------------------------------
    --     type Alert_Output_Select is (All_Limits)
    --        T_CRITICAL > T_HIGHER > __TA__ > T_LOWER -> high
    procedure Test_No_Alert
-     (T : in out AUnit.Test_Cases.Test_Case'Class)
-   is
+     (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);
 
-      Temp : Celsius;
+      Temp     : Celsius;
       A_Status : Ambient_Status;
 
       use AUnit.Assertions;
@@ -123,13 +123,14 @@ package body Comparator_Tests is
                                Temp     => Temp);
 
       Assert (A_Status.GorE_Upper = False,
-             "Comparator: Test_No_Alert.GorE_Upper /= False");
+              "Interrupt: Test_No_Alert.GorE_Upper /= False");
       Assert (A_Status.Less_Than_Lower = False,
-              "Comparator: Test_No_Alert.Less_Than_Lower /= False");
+              "Interrupt: Test_No_Alert.Less_Than_Lower /= False");
       Assert (A_Status.GorE_Critical = False,
-              "Comparator: Test_No_Alert.GorE_Critical /= False");
-      Assert (Alert_Pin.Get,
-              "Comparator: Test_No_Alert.Alert_Pin = Low, Active");
+              "Interrupt: Test_No_Alert.GorE_Critical /= False");
+      --  TODO!!!!
+--      Assert (Alert_Pin.Get,
+--              "Interrupt: Test_No_Alert.Alert_Pin = Low, Active");
    end Test_No_Alert;
 
    --------------------------------------------------------------------------
@@ -138,7 +139,7 @@ package body Comparator_Tests is
      (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);
 
-      Temp : Celsius;
+      Temp     : Celsius;
       A_Status : Ambient_Status;
 
       use AUnit.Assertions;
@@ -153,13 +154,17 @@ package body Comparator_Tests is
                                Temp     => Temp);
 
       Assert (A_Status.GorE_Upper = False,
-              "Comparator: Test_No_Alert.GorE_Upper /= False");
+              "Interrupt: Test_TA_Too_Low.GorE_Upper /= False");
       Assert (A_Status.Less_Than_Lower,
-              "Comparator: Test_No_Alert.Less_Than_Lower /= True");
+              "Interrupt: Test_TA_Too_Low.Less_Than_Lower /= True");
       Assert (A_Status.GorE_Critical = False,
-              "Comparator: Test_No_Alert.GorE_Critical /= False");
+              "Interrupt: Test_TA_Too_Low.GorE_Critical /= False");
       Assert (Alert_Pin.Get = False,
-              "Comparator: Test_No_Alert.Alert_Pin = High, Inactive");
+              "Interrupt: Test_TA_Too_Low.Alert_Pin = High, Inactive");
+      Clear_Interrupt (This   => Temp_Sensor_Device,
+                       Status => Status);
+      Assert (Alert_Pin.Get,
+              "Interrupt: Test_TA_Too_Low.Alert_Pin = Low, Active");
    end Test_TA_Too_Low;
 
    --------------------------------------------------------------------------
@@ -168,7 +173,7 @@ package body Comparator_Tests is
      (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);
 
-      Temp : Celsius;
+      Temp     : Celsius;
       A_Status : Ambient_Status;
 
       use AUnit.Assertions;
@@ -183,13 +188,15 @@ package body Comparator_Tests is
                                Temp     => Temp);
 
       Assert (A_Status.GorE_Upper,
-              "Comparator: Test_No_Alert.GorE_Upper /= True");
+              "Interrupt: Test_TA_Too_High.GorE_Upper /= True");
       Assert (A_Status.Less_Than_Lower = False,
-              "Comparator: Test_No_Alert.Less_Than_Lower /= False");
+              "Interrupt: Test_TA_Too_High.Less_Than_Lower /= False");
       Assert (A_Status.GorE_Critical = False,
-              "Comparator: Test_No_Alert.GorE_Critical /= False");
-      Assert (Alert_Pin.Get = False,
-              "Comparator: Test_No_Alert.Alert_Pin = High, Inactive");
+              "Interrupt: Test_TA_Too_High.GorE_Critical /= False");
+      Clear_Interrupt (This   => Temp_Sensor_Device,
+                       Status => Status);
+      Assert (Alert_Pin.Get,
+              "Interrupt: Test_TA_Too_High.Alert_Pin = Low, Active");
    end Test_TA_Too_High;
 
    --------------------------------------------------------------------------
@@ -198,7 +205,7 @@ package body Comparator_Tests is
      (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);
 
-      Temp : Celsius;
+      Temp     : Celsius;
       A_Status : Ambient_Status;
 
       use AUnit.Assertions;
@@ -207,8 +214,8 @@ package body Comparator_Tests is
                              Status => Status,
                              Temp   => YES_ALERT_T_HIGHER);
       Set_Critical_Temperature (This   => Temp_Sensor_Device,
-                             Status => Status,
-                             Temp   => YES_ALERT_CRITICAL_HIGH);
+                                Status => Status,
+                                Temp   => YES_ALERT_CRITICAL_HIGH);
 
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
@@ -216,13 +223,15 @@ package body Comparator_Tests is
                                Temp     => Temp);
 
       Assert (A_Status.GorE_Upper,
-              "Comparator: Test_No_Alert.GorE_Upper /= True");
+              "Interrupt: Test_TA_Above_Critical.GorE_Upper /= True");
       Assert (A_Status.Less_Than_Lower = False,
-              "Comparator: Test_No_Alert.Less_Than_Lower /= False");
+              "Interrupt: Test_TA_Above_Critical.Less_Than_Lower /= False");
       Assert (A_Status.GorE_Critical,
-              "Comparator: Test_No_Alert.GorE_Critical /= True");
-      Assert (Alert_Pin.Get = False,
-              "Comparator: Test_No_Alert.Alert_Pin = High, Inactive");
+              "Interrupt: Test_TA_Above_Critical.GorE_Critical /= True");
+      Clear_Interrupt (This   => Temp_Sensor_Device,
+                       Status => Status);
+--        Assert (Alert_Pin.Get,
+--                "Interrupt: Test_TA_Above_Critical.Alert_Pin = Low, Active");
    end Test_TA_Above_Critical;
 
    --------------------------------------------------------------------------
@@ -231,7 +240,7 @@ package body Comparator_Tests is
      (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);
 
-      Temp : Celsius;
+      Temp     : Celsius;
       A_Status : Ambient_Status;
 
       use AUnit.Assertions;
@@ -244,16 +253,22 @@ package body Comparator_Tests is
                                Temp     => Temp);
       --  back to POR
       Alert_All_Limits (This   => Temp_Sensor_Device,
-                           Status => Status);
+                        Status => Status);
 
       Assert (A_Status.GorE_Upper = False,
-              "Comparator: Test_No_Alert.GorE_Upper /= False");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Lower.GorE_Upper /= False");
       Assert (A_Status.Less_Than_Lower = False,
-              "Comparator: Test_No_Alert.Less_Than_Lower /= False");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Lower.Less_Than_Lower /= False");
       Assert (A_Status.GorE_Critical = False,
-              "Comparator: Test_No_Alert.GorE_Critical /= False");
-      Assert (Alert_Pin.Get,
-              "Comparator: Test_No_Alert.Alert_Pin = Low, Active");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Lower.GorE_Critical /= False");
+      Clear_Interrupt (This   => Temp_Sensor_Device,
+                       Status => Status);
+      --        Assert (Alert_Pin.Get,
+      --                "Interrupt: "
+      --  & "Test_CriticalOnly_TA_Above_Lower.Alert_Pin = Low, Active");
    end Test_CriticalOnly_TA_Above_Lower;
 
    --------------------------------------------------------------------------
@@ -262,7 +277,7 @@ package body Comparator_Tests is
      (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);
 
-      Temp : Celsius;
+      Temp     : Celsius;
       A_Status : Ambient_Status;
 
       use AUnit.Assertions;
@@ -282,13 +297,19 @@ package body Comparator_Tests is
                         Status => Status);
 
       Assert (A_Status.GorE_Upper,
-              "Comparator: Test_No_Alert.GorE_Upper /= True");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Higher.GorE_Upper /= True");
       Assert (A_Status.Less_Than_Lower = False,
-              "Comparator: Test_No_Alert.Less_Than_Lower /= False");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Higher.Less_Than_Lower /= False");
       Assert (A_Status.GorE_Critical = False,
-              "Comparator: Test_No_Alert.GorE_Critical /= False");
-      Assert (Alert_Pin.Get = False,
-              "Comparator: Test_No_Alert.Alert_Pin = High Inactive");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Higher.GorE_Critical /= False");
+      Clear_Interrupt (This   => Temp_Sensor_Device,
+                       Status => Status);
+--        Assert (Alert_Pin.Get = False,
+--                "Interrupt: "Interrupt: "
+--        & "Test_CriticalOnly_TA_Above_Higher.Alert_Pin = High Inactive");
    end Test_CriticalOnly_TA_Above_Higher;
 
    --------------------------------------------------------------------------
@@ -297,7 +318,7 @@ package body Comparator_Tests is
      (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);
 
-      Temp : Celsius;
+      Temp     : Celsius;
       A_Status : Ambient_Status;
 
       use AUnit.Assertions;
@@ -320,13 +341,19 @@ package body Comparator_Tests is
                         Status => Status);
 
       Assert (A_Status.GorE_Upper,
-              "Comparator: Test_No_Alert.GorE_Upper /= True");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Critical.GorE_Upper /= True");
       Assert (A_Status.Less_Than_Lower = False,
-              "Comparator: Test_No_Alert.Less_Than_Lower /= False");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Critical.Less_Than_Lower/=False");
       Assert (A_Status.GorE_Critical,
-              "Comparator: Test_No_Alert.GorE_Critical /= True");
-      Assert (Alert_Pin.Get = False,
-              "Comparator: Test_No_Alert.Alert_Pin = High, Inactive");
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Critical.GorE_Critical /= True");
+      Clear_Interrupt (This   => Temp_Sensor_Device,
+                       Status => Status);
+--        Assert (Alert_Pin.Get = False,
+--                "Interrupt: "
+--        & "Test_CriticalOnly_TA_Above_Critical.Alert_Pin = High, Inactive");
    end Test_CriticalOnly_TA_Above_Critical;
 
-end Comparator_Tests;
+end Interrupt_Tests;

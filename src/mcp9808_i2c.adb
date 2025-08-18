@@ -605,6 +605,46 @@ package body MCP9808_I2C is
    end Is_Alert_Comparator;
 
    ---------------------------------------------------------------------------
+   procedure Set_Alert_As_Interrupt
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_OUTPUT_MODE := Interrupt;
+
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+   end Set_Alert_As_Interrupt;
+
+   ---------------------------------------------------------------------------
+   function Is_Alert_Interrupt
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_ALERT_OUTPUT_MODE = Interrupt;
+   end Is_Alert_Interrupt;
+
+   ---------------------------------------------------------------------------
    procedure Alert_All_Limits
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
@@ -764,6 +804,7 @@ package body MCP9808_I2C is
       return C_R.CR_ALERT_CONTROL = Disabled;
    end Is_Alert_Output_Disabled;
 
+   ---------------------------------------------------------------------------
    procedure Set_Config_Register (This   : in out MCP9808_I2C_Port;
                                   Status : out Op_Status;
                                   C_R    : CONFIG_REGISTER) is
@@ -881,6 +922,47 @@ package body MCP9808_I2C is
       return C_R.CR_ALERT_POLARITY = Active_High;
    end Is_Alert_Polarity_High;
 
+   ---------------------------------------------------------------------------
+   procedure Clear_Interrupt
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_INTERRUPT_CLEAR := 1;
+
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+   end Clear_Interrupt;
+
+   ---------------------------------------------------------------------------
+   function Is_Interrupt_Clear
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) return Boolean is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return True;
+      end if;
+
+      return C_R.CR_INTERRUPT_CLEAR = 0;
+   end Is_Interrupt_Clear;
+
+   ---------------------------------------------------------------------------
    function Get_Manufacturer_Id
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) return UInt16 is
@@ -903,6 +985,7 @@ package body MCP9808_I2C is
       return Result;
    end Get_Manufacturer_Id;
 
+   ---------------------------------------------------------------------------
    function Get_Device_Id
      (This      : in out MCP9808_I2C_Port;
       Status    : out Op_Status) return UInt8 is
@@ -921,6 +1004,7 @@ package body MCP9808_I2C is
       return Data_R (1);
    end Get_Device_Id;
 
+   ---------------------------------------------------------------------------
    function Get_Device_Revision
      (This      : in out MCP9808_I2C_Port;
       Status    : out Op_Status) return UInt8 is
@@ -993,7 +1077,7 @@ package body MCP9808_I2C is
 
    ---------------------------------------------------------------------------
    function Celsius_To_Register (Temp_In_Celsius : Celsius)
-                                 return TEMPERATURE_REGISTER is
+                              return TEMPERATURE_REGISTER is
 
       Local_Celsius : Celsius := Temp_In_Celsius;
       Temp_Binary   : UInt16;

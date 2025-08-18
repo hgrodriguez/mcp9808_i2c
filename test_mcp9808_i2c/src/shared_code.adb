@@ -10,6 +10,9 @@ with Configuration; use Configuration;
 
 package body Shared_Code is
 
+   Status : Op_Status;
+
+   --------------------------------------------------------------------------
    procedure Initialize is
       Status : Op_Status;
    begin
@@ -40,5 +43,34 @@ package body Shared_Code is
                          Pull      => RP.GPIO.Pull_Up,
                          Func      => RP.GPIO.SIO);
    end Initialize;
+
+   --------------------------------------------------------------------------
+   procedure Set_No_Alert_Limits is
+   begin
+      Set_Critical_Temperature (This   => Temp_Sensor_Device,
+                                Status => Status,
+                                Temp   => NO_ALERT_CRITICAL_HIGH);
+      Set_Upper_Temperature (This   => Temp_Sensor_Device,
+                             Status => Status,
+                             Temp   => NO_ALERT_T_HIGHER);
+      Set_Lower_Temperature (This   => Temp_Sensor_Device,
+                             Status => Status,
+                             Temp   => NO_ALERT_T_LOWER);
+   end Set_No_Alert_Limits;
+
+   --------------------------------------------------------------------------
+   procedure Set_Limits_Back_to_POR is
+   begin
+      --  back to POR to not disturb any other tests
+      Set_Critical_Temperature (This   => Temp_Sensor_Device,
+                                Status => Status,
+                                Temp   => POR_ALERT_CRITICAL_HIGH);
+      Set_Upper_Temperature (This   => Temp_Sensor_Device,
+                             Status => Status,
+                             Temp   => POR_ALERT_T_HIGHER);
+      Set_Lower_Temperature (This   => Temp_Sensor_Device,
+                             Status => Status,
+                             Temp   => POR_ALERT_T_LOWER);
+   end Set_Limits_Back_to_POR;
 
 end Shared_Code;
