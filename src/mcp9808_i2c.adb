@@ -154,6 +154,9 @@ package body MCP9808_I2C is
    procedure Get_Config_Register (This   : in out MCP9808_I2C_Port;
                                   Status : out Op_Status;
                                   C_R    : out CONFIG_REGISTER);
+   procedure Set_Config_Register (This   : in out MCP9808_I2C_Port;
+                                  Status : out Op_Status;
+                                  C_R    : CONFIG_REGISTER);
 
    ---------------------------------------------------------------------------
    procedure Get_Hysteresis (This   : in out MCP9808_I2C_Port;
@@ -184,17 +187,7 @@ package body MCP9808_I2C is
                              Status : out Op_Status;
                              Hyst   : Hysteresis) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-           others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -210,25 +203,9 @@ package body MCP9808_I2C is
          when Three => C_R.CR_HYSTERESIS := 2#10#;
          when Six => C_R.CR_HYSTERESIS := 2#11#;
       end case;
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Set_Hysteresis;
 
    ---------------------------------------------------------------------------
@@ -399,17 +376,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -421,25 +388,9 @@ package body MCP9808_I2C is
 
       C_R.CR_WINDOW_LOCK := 1;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Lock_Lower_Upper_Window;
 
    ---------------------------------------------------------------------------
@@ -471,17 +422,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -493,25 +434,9 @@ package body MCP9808_I2C is
 
       C_R.CR_CRIT_LOCK := 1;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Lock_Critical_Temperature;
 
    ---------------------------------------------------------------------------
@@ -564,17 +489,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -586,25 +501,9 @@ package body MCP9808_I2C is
 
       C_R.CR_SHUTDOWN := 1;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Shutdown;
 
    ---------------------------------------------------------------------------
@@ -630,17 +529,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -652,25 +541,9 @@ package body MCP9808_I2C is
 
       C_R.CR_SHUTDOWN := 0;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Wakeup;
 
    ---------------------------------------------------------------------------
@@ -696,17 +569,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -718,25 +581,9 @@ package body MCP9808_I2C is
 
       C_R.CR_ALERT_OUTPUT_MODE := Comparator;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Set_Alert_As_Comparator;
 
    ---------------------------------------------------------------------------
@@ -762,17 +609,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -784,25 +621,9 @@ package body MCP9808_I2C is
 
       C_R.CR_ALERT_SELECT := All_Limits;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Alert_All_Limits;
 
    ---------------------------------------------------------------------------
@@ -828,17 +649,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -850,25 +661,9 @@ package body MCP9808_I2C is
 
       C_R.CR_ALERT_SELECT := TA_GT_TCRIT_ONLY;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Alert_Only_Critical;
 
    ---------------------------------------------------------------------------
@@ -894,17 +689,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -916,26 +701,9 @@ package body MCP9808_I2C is
 
       C_R.CR_ALERT_CONTROL := Enabled;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
-
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Enable_Alert_Output;
 
    ---------------------------------------------------------------------------
@@ -961,17 +729,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -983,25 +741,9 @@ package body MCP9808_I2C is
 
       C_R.CR_ALERT_CONTROL := Disabled;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Disable_Alert_Output;
 
    ---------------------------------------------------------------------------
@@ -1022,10 +764,9 @@ package body MCP9808_I2C is
       return C_R.CR_ALERT_CONTROL = Disabled;
    end Is_Alert_Output_Disabled;
 
-   ---------------------------------------------------------------------------
-   procedure Set_Alert_Polarity_Low
-     (This   : in out MCP9808_I2C_Port;
-      Status : out Op_Status) is
+   procedure Set_Config_Register (This   : in out MCP9808_I2C_Port;
+                                  Status : out Op_Status;
+                                  C_R    : CONFIG_REGISTER) is
 
       Data_T                : I2C.I2C_Data (1 .. 3)
         := (1 => RP_CONFIG,
@@ -1034,21 +775,11 @@ package body MCP9808_I2C is
       LSB                   : UInt8;
       MSB                   : UInt8;
       Word                  : UInt16;
-      C_R                   : CONFIG_REGISTER;
 
       function To_UInt16 is
         new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
-      Get_Config_Register (This   => This,
-                           Status => Status,
-                           C_R    => C_R);
-      if Status.I2C_Status /= I2C.Ok then
-         return;
-      end if;
-
-      C_R.CR_ALERT_POLARITY := Active_Low;
-
       Word := To_UInt16 (C_R);
       LSB := UInt8 (Word);
       MSB := UInt8 (Shift_Right (Word, 8));
@@ -1068,6 +799,28 @@ package body MCP9808_I2C is
          Status.E_Status := I2C_Not_Ok;
          return;
       end if;
+   end Set_Config_Register;
+
+   ---------------------------------------------------------------------------
+   procedure Set_Alert_Polarity_Low
+     (This   : in out MCP9808_I2C_Port;
+      Status : out Op_Status) is
+
+      C_R                   : CONFIG_REGISTER;
+
+   begin
+      Get_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
+      if Status.I2C_Status /= I2C.Ok then
+         return;
+      end if;
+
+      C_R.CR_ALERT_POLARITY := Active_Low;
+
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Set_Alert_Polarity_Low;
 
    ---------------------------------------------------------------------------
@@ -1093,17 +846,7 @@ package body MCP9808_I2C is
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) is
 
-      Data_T                : I2C.I2C_Data (1 .. 3)
-        := (1 => RP_CONFIG,
-            others => 0);
-      I2C_Status            : I2C.I2C_Status;
-      LSB                   : UInt8;
-      MSB                   : UInt8;
-      Word                  : UInt16;
       C_R                   : CONFIG_REGISTER;
-
-      function To_UInt16 is
-        new Ada.Unchecked_Conversion (CONFIG_REGISTER, UInt16);
 
    begin
       Get_Config_Register (This   => This,
@@ -1115,25 +858,9 @@ package body MCP9808_I2C is
 
       C_R.CR_ALERT_POLARITY := Active_High;
 
-      Word := To_UInt16 (C_R);
-      LSB := UInt8 (Word);
-      MSB := UInt8 (Shift_Right (Word, 8));
-
-      Data_T (2) := MSB;
-      Data_T (3) := LSB;
-
-      Status.I2C_Status := I2C.Ok;
-      Status.E_Status := Ok;
-
-      This.Port.all.Master_Transmit (Addr    => This.Address,
-                                     Data    => Data_T,
-                                     Status  => I2C_Status,
-                                     Timeout => 1000);
-      if I2C_Status /= I2C.Ok then
-         Status.I2C_Status := I2C_Status;
-         Status.E_Status := I2C_Not_Ok;
-         return;
-      end if;
+      Set_Config_Register (This   => This,
+                           Status => Status,
+                           C_R    => C_R);
    end Set_Alert_Polarity_High;
 
    ---------------------------------------------------------------------------
