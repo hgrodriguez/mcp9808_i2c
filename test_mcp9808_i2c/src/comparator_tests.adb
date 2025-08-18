@@ -13,7 +13,6 @@ package body Comparator_Tests is
    procedure Test_POR
      (T : in out AUnit.Test_Cases.Test_Case'Class);
    --
-   --  SET COMPARATOR OUTPUT TO ACTIVE LOW
    procedure Test_No_Alert
      (T : in out AUnit.Test_Cases.Test_Case'Class);
    procedure Test_TA_Too_Low
@@ -32,24 +31,22 @@ package body Comparator_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out Comparator_Test)
    is
    begin
       Shared_Code.Initialize;
-      --  we set the hysteresis to 0, as we do not test the
-      --  hysteresis capabilty at all
-      Set_Hysteresis (This   => Temp_Sensor_Device,
-                      Status => Status,
-                      Hyst   => Zero);
       --  make sure the limits do not create any noise
       Shared_Code.Set_No_Alert_Limits;
+
       --  enable output of alert
       Enable_Alert_Output (This   => Temp_Sensor_Device,
                            Status => Status);
    end Set_Up;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Tear_Down
      (T : in out Comparator_Test) is
@@ -59,6 +56,7 @@ package body Comparator_Tests is
                            Status => Status);
    end Tear_Down;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Register_Tests
      (T : in out Comparator_Test)
@@ -83,6 +81,7 @@ package body Comparator_Tests is
                         "Comparator Test_CriticalOnly_TA_Above_Critical");
    end Register_Tests;
 
+   --------------------------------------------------------------------------
    overriding
    function Name
      (T : Comparator_Test)
@@ -163,7 +162,7 @@ package body Comparator_Tests is
    begin
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
 
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
@@ -187,7 +186,7 @@ package body Comparator_Tests is
    begin
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
       Set_Critical_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
                              Temp   => YES_ALERT_CRITICAL_HIGH);
@@ -242,7 +241,7 @@ package body Comparator_Tests is
                            Status => Status);
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
 
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
@@ -272,7 +271,7 @@ package body Comparator_Tests is
                            Status => Status);
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
       Set_Critical_Temperature (This   => Temp_Sensor_Device,
                                 Status => Status,
                                 Temp   => YES_ALERT_CRITICAL_HIGH);

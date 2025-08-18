@@ -23,6 +23,7 @@ package body Resolution_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out Resolution_Test)
@@ -31,6 +32,7 @@ package body Resolution_Tests is
       Shared_Code.Initialize;
    end Set_Up;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Register_Tests
      (T : in out Resolution_Test)
@@ -44,6 +46,7 @@ package body Resolution_Tests is
       Register_Routine (T, Test_Sixteenth'Access, "Resolution Sixteenth");
    end Register_Tests;
 
+   --------------------------------------------------------------------------
    overriding
    function Name
      (T : Resolution_Test)

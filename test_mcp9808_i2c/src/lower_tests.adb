@@ -24,6 +24,7 @@ package body Lower_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out Lower_Test)
@@ -32,6 +33,7 @@ package body Lower_Tests is
       Shared_Code.Initialize;
    end Set_Up;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Register_Tests
      (T : in out Lower_Test)
@@ -46,6 +48,7 @@ package body Lower_Tests is
 --                          "Lower Test_Limit_And_Lock");
    end Register_Tests;
 
+   --------------------------------------------------------------------------
    overriding
    function Name
      (T : Lower_Test)

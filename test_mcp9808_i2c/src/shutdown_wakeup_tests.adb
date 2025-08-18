@@ -19,6 +19,7 @@ package body Shutdown_Wakeup_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out Shutdown_Wakeup_Test)
@@ -42,6 +43,7 @@ package body Shutdown_Wakeup_Tests is
                         "Shutdown_Wakeup Test_Wakeup");
    end Register_Tests;
 
+   --------------------------------------------------------------------------
    overriding
    function Name
      (T : Shutdown_Wakeup_Test)

@@ -1,6 +1,6 @@
 name = "mcp9808_i2c"
 description = "MCP9808 I2C library"
-version = "0.9.0"
+version = "1.0.0"
 
 authors = ["Holger Rodriguez"]
 maintainers = ["Holger Rodriguez <github@roseng.ch>"]

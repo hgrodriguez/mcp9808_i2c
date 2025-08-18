@@ -26,11 +26,13 @@ package MCP9808_I2C is
    ---------------------------------------------------------------------------
    --  MCP9808 status of last operation.
    type MCP9808_Status is (
-                          --  all operations were successful
-                          Ok,
-                          --  Is set,
-                          --  if anything is not OK with the I2C operation
-                          I2C_Not_Ok
+                           --  all operations were successful
+                           Ok,
+                           --  initialization error
+                           Init_Error,
+                           --  Is set,
+                           --  if anything is not OK with the I2C operation
+                           I2C_Not_Ok
                           );
 
    ---------------------------------------------------------------------------
@@ -246,7 +248,6 @@ package MCP9808_I2C is
    procedure Clear_Interrupt
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status);
-
    function Is_Interrupt_Clear
      (This   : in out MCP9808_I2C_Port;
       Status : out Op_Status) return Boolean;
@@ -281,8 +282,8 @@ private
    RP_T_CRIT  : constant UInt8 := 2#0000_0100#;
    RP_T_A     : constant UInt8 := 2#0000_0101#;
 
-   function Div_Integer_C (V : Celsius) return UInt8;
-   function Div_Fraction_C (V : Celsius) return UInt4;
+   function Div_Integer_C (C : Celsius) return UInt8;
+   function Div_Fraction_C (C : Celsius) return UInt4;
 
    procedure Set_Any_Temperature
      (RP_REGISTER : UInt8;

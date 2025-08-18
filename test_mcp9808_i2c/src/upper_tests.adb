@@ -24,6 +24,7 @@ package body Upper_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out Upper_Test)
@@ -47,6 +48,7 @@ package body Upper_Tests is
 --                          "Upper Test_Limit_And_Lock");
    end Register_Tests;
 
+   --------------------------------------------------------------------------
    overriding
    function Name
      (T : Upper_Test)

@@ -30,26 +30,29 @@ package body Interrupt_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out Interrupt_Test) is
    begin
       Shared_Code.Initialize;
-      --  we set the hysteresis to 0, as we do not test the
-      --  hysteresis capabilty at all
-      Set_Hysteresis (This   => Temp_Sensor_Device,
-                      Status => Status,
-                      Hyst   => Zero);
       --  make sure the limits do not create any noise
       Shared_Code.Set_No_Alert_Limits;
+
       --  enable output of alert
       Enable_Alert_Output (This   => Temp_Sensor_Device,
                            Status => Status);
+      --  active low
+      Set_Alert_Polarity_Low (This   => Temp_Sensor_Device,
+                              Status => Status);
       --  enable interrupt
       Set_Alert_As_Interrupt (This   => Temp_Sensor_Device,
                               Status => Status);
+      Clear_Interrupt (This   => Temp_Sensor_Device,
+                       Status => Status);
    end Set_Up;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Tear_Down
      (T : in out Interrupt_Test) is
@@ -62,13 +65,14 @@ package body Interrupt_Tests is
                             Status => Status);
    end Tear_Down;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Register_Tests
      (T : in out Interrupt_Test) is
       use AUnit.Test_Cases.Registration;
    begin
       Register_Routine (T, Test_Init'Access,
-                        "Interrupt POR");
+                        "Interrupt Init");
       Register_Routine (T, Test_No_Alert'Access,
                         "Interrupt No_Alert");
       Register_Routine (T, Test_TA_Too_Low'Access,
@@ -85,6 +89,7 @@ package body Interrupt_Tests is
                         "Interrupt Test_CriticalOnly_TA_Above_Critical");
    end Register_Tests;
 
+   --------------------------------------------------------------------------
    overriding
    function Name
      (T : Interrupt_Test)
@@ -101,12 +106,11 @@ package body Interrupt_Tests is
       use AUnit.Assertions;
    begin
       Assert (Is_Alert_Interrupt (This   => Temp_Sensor_Device,
-                                      Status => Status),
+                                  Status => Status),
               "Interrupt: Init /= True");
    end Test_Init;
 
    --------------------------------------------------------------------------
-   --     type Alert_Output_Select is (All_Limits)
    --        T_CRITICAL > T_HIGHER > __TA__ > T_LOWER -> high
    procedure Test_No_Alert
      (T : in out AUnit.Test_Cases.Test_Case'Class) is
@@ -114,17 +118,17 @@ package body Interrupt_Tests is
 
       Temp     : Celsius;
       A_Status : Ambient_Status;
+      Pin_Status : Boolean;
 
---      use AUnit.Assertions;
+      use AUnit.Assertions;
    begin
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
                                A_Status => A_Status,
                                Temp     => Temp);
-
-      --  TODO!!!!
---      Assert (Alert_Pin.Get,
---              "Interrupt: Test_No_Alert.Alert_Pin = Low, Active");
+      Pin_Status := Alert_Pin.Get;
+      Assert (Pin_Status,
+              "Interrupt: Test_No_Alert.Alert_Pin = Low, Active");
    end Test_No_Alert;
 
    --------------------------------------------------------------------------
@@ -168,7 +172,7 @@ package body Interrupt_Tests is
    begin
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
 
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
@@ -189,12 +193,13 @@ package body Interrupt_Tests is
 
       Temp     : Celsius;
       A_Status : Ambient_Status;
+      Pin_Status : Boolean;
 
---      use AUnit.Assertions;
+      use AUnit.Assertions;
    begin
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
       Set_Critical_Temperature (This   => Temp_Sensor_Device,
                                 Status => Status,
                                 Temp   => YES_ALERT_CRITICAL_HIGH);
@@ -206,8 +211,15 @@ package body Interrupt_Tests is
 
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
---        Assert (Alert_Pin.Get,
---                "Interrupt: Test_TA_Above_Critical.Alert_Pin = Low, Active");
+      Set_Critical_Temperature (This   => Temp_Sensor_Device,
+                                Status => Status,
+                                Temp   => NO_ALERT_CRITICAL_HIGH);
+      Set_Upper_Temperature (This   => Temp_Sensor_Device,
+                             Status => Status,
+                             Temp   => NO_ALERT_T_UPPER);
+      Pin_Status := Alert_Pin.Get;
+      Assert (Pin_Status,
+              "Interrupt: Test_TA_Above_Critical.Alert_Pin = Low, Active");
    end Test_TA_Above_Critical;
 
    --------------------------------------------------------------------------
@@ -218,8 +230,9 @@ package body Interrupt_Tests is
 
       Temp     : Celsius;
       A_Status : Ambient_Status;
+      Pin_Status : Boolean;
 
---      use AUnit.Assertions;
+      use AUnit.Assertions;
    begin
       Alert_Only_Critical (This   => Temp_Sensor_Device,
                            Status => Status);
@@ -233,9 +246,10 @@ package body Interrupt_Tests is
 
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
-      --        Assert (Alert_Pin.Get,
-      --                "Interrupt: "
-      --  & "Test_CriticalOnly_TA_Above_Lower.Alert_Pin = Low, Active");
+      Pin_Status := Alert_Pin.Get;
+      Assert (Pin_Status,
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Lower.Alert_Pin = Low, Active");
    end Test_CriticalOnly_TA_Above_Lower;
 
    --------------------------------------------------------------------------
@@ -246,14 +260,15 @@ package body Interrupt_Tests is
 
       Temp     : Celsius;
       A_Status : Ambient_Status;
+      Pin_Status : Boolean;
 
---      use AUnit.Assertions;
+      use AUnit.Assertions;
    begin
       Alert_Only_Critical (This   => Temp_Sensor_Device,
                            Status => Status);
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
 
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
@@ -265,9 +280,13 @@ package body Interrupt_Tests is
 
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
---        Assert (Alert_Pin.Get = False,
---                "Interrupt: "Interrupt: "
---        & "Test_CriticalOnly_TA_Above_Higher.Alert_Pin = High Inactive");
+      Set_Upper_Temperature (This   => Temp_Sensor_Device,
+                             Status => Status,
+                             Temp   => NO_ALERT_T_UPPER);
+      Pin_Status := Alert_Pin.Get;
+      Assert (Pin_Status,
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Higher.Alert_Pin = Low, Active");
    end Test_CriticalOnly_TA_Above_Higher;
 
    --------------------------------------------------------------------------
@@ -278,14 +297,15 @@ package body Interrupt_Tests is
 
       Temp     : Celsius;
       A_Status : Ambient_Status;
+      Pin_Status : Boolean;
 
---      use AUnit.Assertions;
+      use AUnit.Assertions;
    begin
       Alert_Only_Critical (This   => Temp_Sensor_Device,
                            Status => Status);
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
       Set_Critical_Temperature (This   => Temp_Sensor_Device,
                                 Status => Status,
                                 Temp   => YES_ALERT_CRITICAL_HIGH);
@@ -298,11 +318,19 @@ package body Interrupt_Tests is
       Alert_All_Limits (This   => Temp_Sensor_Device,
                         Status => Status);
 
+      Set_Critical_Temperature (This   => Temp_Sensor_Device,
+                                Status => Status,
+                                Temp   => NO_ALERT_CRITICAL_HIGH);
+      Set_Upper_Temperature (This   => Temp_Sensor_Device,
+                             Status => Status,
+                             Temp   => NO_ALERT_T_UPPER);
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
---        Assert (Alert_Pin.Get = False,
---                "Interrupt: "
---        & "Test_CriticalOnly_TA_Above_Critical.Alert_Pin = High, Inactive");
+      Pin_Status := Alert_Pin.Get;
+      Assert (Pin_Status,
+              "Interrupt: "
+              & "Test_CriticalOnly_TA_Above_Critical."
+              & "Alert_Pin = Low, Active");
    end Test_CriticalOnly_TA_Above_Critical;
 
 end Interrupt_Tests;

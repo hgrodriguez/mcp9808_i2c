@@ -23,6 +23,7 @@ package body Hysteresis_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out Hysteresis_Test)
@@ -45,6 +46,7 @@ package body Hysteresis_Tests is
       Register_Routine (T, Test_Six'Access, "Hysteresis Test_Six");
    end Register_Tests;
 
+   --------------------------------------------------------------------------
    overriding
    function Name
      (T : Hysteresis_Test)
@@ -104,7 +106,8 @@ package body Hysteresis_Tests is
               "Hysteresis: Get="
               & H'Image
               & " /= Hysteresis Set="
-              & H_VAL'Image);
+              & H_VAL'Image
+             );
    end Test_Zero;
 
    --------------------------------------------------------------------------
@@ -144,7 +147,8 @@ package body Hysteresis_Tests is
               "Hysteresis: Get="
               & H'Image
               & " /= Hysteresis Set="
-              & H_VAL'Image);
+              & H_VAL'Image
+             );
    end Test_One_Half;
 
    --------------------------------------------------------------------------
@@ -184,7 +188,8 @@ package body Hysteresis_Tests is
               "Hysteresis: Get="
               & H'Image
               & " /= Hysteresis Set="
-              & H_VAL'Image);
+              & H_VAL'Image
+             );
    end Test_Three;
 
    --------------------------------------------------------------------------
@@ -224,7 +229,8 @@ package body Hysteresis_Tests is
               "Hysteresis: Get="
               & H'Image
               & " /= Hysteresis Set="
-              & H_VAL'Image);
+              & H_VAL'Image
+             );
    end Test_Six;
 
 end Hysteresis_Tests;

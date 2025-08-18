@@ -35,18 +35,18 @@ package Configuration is
    --  constants for the temperature tests
    --------------------------------------------------------------------------
    POR_ALERT_CRITICAL_HIGH : constant Celsius := Celsius (0);
-   POR_ALERT_T_HIGHER      : constant Celsius := Celsius (0);
+   POR_ALERT_T_UPPER       : constant Celsius := Celsius (0);
    POR_ALERT_T_LOWER       : constant Celsius := Celsius (0);
 
    NO_ALERT_CRITICAL_HIGH  : constant Celsius := Celsius (225);
-   NO_ALERT_T_HIGHER       : constant Celsius := Celsius (200);
+   NO_ALERT_T_UPPER        : constant Celsius := Celsius (200);
    NO_ALERT_T_LOWER        : constant Celsius := Celsius (-40);
    --------------------------------------------------------------------------
    --  these are the ones which must alert
    --  assuming, that the ambient temperature is inside the normal range of
    --  +15 .. +30
    YES_ALERT_CRITICAL_HIGH : constant Celsius := Celsius (10);
-   YES_ALERT_T_HIGHER      : constant Celsius := Celsius (5);
+   YES_ALERT_T_UPPER       : constant Celsius := Celsius (5);
    YES_ALERT_T_LOWER       : constant Celsius := Celsius (35);
 
 end Configuration;

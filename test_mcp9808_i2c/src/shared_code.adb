@@ -32,16 +32,22 @@ package body Shared_Code is
                                  Func => RP.GPIO.I2C);
       Temp_Sensor_Port.Configure (Baudrate => 400_000);
 
+      RP.GPIO.Configure (This      => Alert_Pin,
+                         Mode      => RP.GPIO.Input,
+                         Pull      => RP.GPIO.Pull_Up,
+                         Func      => RP.GPIO.SIO);
+
       MCP9808_I2C.Configure
         (This      => Temp_Sensor_Device,
          Port      => Temp_Sensor_Port'Unchecked_Access,
          Address   => I2C_DEFAULT_ADDRESS,
          Status => Status);
 
-      RP.GPIO.Configure (This      => Alert_Pin,
-                         Mode      => RP.GPIO.Input,
-                         Pull      => RP.GPIO.Pull_Up,
-                         Func      => RP.GPIO.SIO);
+      --  we set the hysteresis to 0, as we do not test the
+      --  hysteresis capabilty at all
+      Set_Hysteresis (This   => Temp_Sensor_Device,
+                      Status => Status,
+                      Hyst   => Zero);
    end Initialize;
 
    --------------------------------------------------------------------------
@@ -52,7 +58,7 @@ package body Shared_Code is
                                 Temp   => NO_ALERT_CRITICAL_HIGH);
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => NO_ALERT_T_HIGHER);
+                             Temp   => NO_ALERT_T_UPPER);
       Set_Lower_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
                              Temp   => NO_ALERT_T_LOWER);
@@ -67,7 +73,7 @@ package body Shared_Code is
                                 Temp   => POR_ALERT_CRITICAL_HIGH);
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => POR_ALERT_T_HIGHER);
+                             Temp   => POR_ALERT_T_UPPER);
       Set_Lower_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
                              Temp   => POR_ALERT_T_LOWER);

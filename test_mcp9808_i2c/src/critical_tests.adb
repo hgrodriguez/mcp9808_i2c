@@ -24,6 +24,7 @@ package body Critical_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out Critical_Test)
@@ -32,6 +33,7 @@ package body Critical_Tests is
       Shared_Code.Initialize;
    end Set_Up;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Register_Tests
      (T : in out Critical_Test)
@@ -46,6 +48,7 @@ package body Critical_Tests is
 --                        "Critical Test_Limit_And_Lock");
    end Register_Tests;
 
+   --------------------------------------------------------------------------
    overriding
    function Name
      (T : Critical_Test)
@@ -107,6 +110,7 @@ package body Critical_Tests is
               & CRITICAL_LIMIT'Image);
    end Test_Limit;
 
+   --------------------------------------------------------------------------
    procedure Test_Limit_And_Lock
      (T : in out AUnit.Test_Cases.Test_Case'Class) is
       pragma Warnings (Off, T);

@@ -28,6 +28,7 @@ package body AmbientStatus_Tests is
 
    Status : Op_Status;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Set_Up
      (T : in out AmbientStatus_Test)
@@ -43,6 +44,7 @@ package body AmbientStatus_Tests is
       Shared_Code.Set_No_Alert_Limits;
    end Set_Up;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Tear_Down
      (T : in out AmbientStatus_Test) is
@@ -50,6 +52,7 @@ package body AmbientStatus_Tests is
       Shared_Code.Set_Limits_Back_to_POR;
    end Tear_Down;
 
+   --------------------------------------------------------------------------
    overriding
    procedure Register_Tests
      (T : in out AmbientStatus_Test)
@@ -145,7 +148,7 @@ package body AmbientStatus_Tests is
    begin
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
 
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
@@ -173,7 +176,7 @@ package body AmbientStatus_Tests is
    begin
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
       Set_Critical_Temperature (This   => Temp_Sensor_Device,
                                 Status => Status,
                                 Temp   => YES_ALERT_CRITICAL_HIGH);
@@ -239,7 +242,7 @@ package body AmbientStatus_Tests is
                            Status => Status);
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
 
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
@@ -275,7 +278,7 @@ package body AmbientStatus_Tests is
                            Status => Status);
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
-                             Temp   => YES_ALERT_T_HIGHER);
+                             Temp   => YES_ALERT_T_UPPER);
       Set_Critical_Temperature (This   => Temp_Sensor_Device,
                                 Status => Status,
                                 Temp   => YES_ALERT_CRITICAL_HIGH);
