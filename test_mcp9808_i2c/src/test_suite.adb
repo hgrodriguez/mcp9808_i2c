@@ -1,3 +1,4 @@
+with AmbientStatus_Tests;
 with Comparator_Tests;
 with Critical_Tests;
 with Hysteresis_Tests;
@@ -11,6 +12,7 @@ with Shutdown_Wakeup_Tests;
 package body Test_Suite is
    Result : aliased AUnit.Test_Suites.Test_Suite;
 
+   AmbientStatus_Case   : aliased AmbientStatus_Tests.AmbientStatus_Test;
    Comparator_Case      : aliased Comparator_Tests.Comparator_Test;
    Critical_Case        : aliased Critical_Tests.Critical_Test;
    Hysteresis_Case      : aliased Hysteresis_Tests.Hysteresis_Test;
@@ -25,6 +27,7 @@ package body Test_Suite is
    is
       use AUnit.Test_Suites;
    begin
+      Add_Test (Result'Access, AmbientStatus_Case'Access);
       Add_Test (Result'Access, Comparator_Case'Access);
       Add_Test (Result'Access, Critical_Case'Access);
       Add_Test (Result'Access, Hysteresis_Case'Access);

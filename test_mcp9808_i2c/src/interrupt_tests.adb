@@ -115,19 +115,13 @@ package body Interrupt_Tests is
       Temp     : Celsius;
       A_Status : Ambient_Status;
 
-      use AUnit.Assertions;
+--      use AUnit.Assertions;
    begin
       Get_Ambient_Temperature (This   => Temp_Sensor_Device,
                                Status => Status,
                                A_Status => A_Status,
                                Temp     => Temp);
 
-      Assert (A_Status.GorE_Upper = False,
-              "Interrupt: Test_No_Alert.GorE_Upper /= False");
-      Assert (A_Status.Less_Than_Lower = False,
-              "Interrupt: Test_No_Alert.Less_Than_Lower /= False");
-      Assert (A_Status.GorE_Critical = False,
-              "Interrupt: Test_No_Alert.GorE_Critical /= False");
       --  TODO!!!!
 --      Assert (Alert_Pin.Get,
 --              "Interrupt: Test_No_Alert.Alert_Pin = Low, Active");
@@ -153,12 +147,6 @@ package body Interrupt_Tests is
                                A_Status => A_Status,
                                Temp     => Temp);
 
-      Assert (A_Status.GorE_Upper = False,
-              "Interrupt: Test_TA_Too_Low.GorE_Upper /= False");
-      Assert (A_Status.Less_Than_Lower,
-              "Interrupt: Test_TA_Too_Low.Less_Than_Lower /= True");
-      Assert (A_Status.GorE_Critical = False,
-              "Interrupt: Test_TA_Too_Low.GorE_Critical /= False");
       Assert (Alert_Pin.Get = False,
               "Interrupt: Test_TA_Too_Low.Alert_Pin = High, Inactive");
       Clear_Interrupt (This   => Temp_Sensor_Device,
@@ -187,12 +175,6 @@ package body Interrupt_Tests is
                                A_Status => A_Status,
                                Temp     => Temp);
 
-      Assert (A_Status.GorE_Upper,
-              "Interrupt: Test_TA_Too_High.GorE_Upper /= True");
-      Assert (A_Status.Less_Than_Lower = False,
-              "Interrupt: Test_TA_Too_High.Less_Than_Lower /= False");
-      Assert (A_Status.GorE_Critical = False,
-              "Interrupt: Test_TA_Too_High.GorE_Critical /= False");
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
       Assert (Alert_Pin.Get,
@@ -208,7 +190,7 @@ package body Interrupt_Tests is
       Temp     : Celsius;
       A_Status : Ambient_Status;
 
-      use AUnit.Assertions;
+--      use AUnit.Assertions;
    begin
       Set_Upper_Temperature (This   => Temp_Sensor_Device,
                              Status => Status,
@@ -222,12 +204,6 @@ package body Interrupt_Tests is
                                A_Status => A_Status,
                                Temp     => Temp);
 
-      Assert (A_Status.GorE_Upper,
-              "Interrupt: Test_TA_Above_Critical.GorE_Upper /= True");
-      Assert (A_Status.Less_Than_Lower = False,
-              "Interrupt: Test_TA_Above_Critical.Less_Than_Lower /= False");
-      Assert (A_Status.GorE_Critical,
-              "Interrupt: Test_TA_Above_Critical.GorE_Critical /= True");
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
 --        Assert (Alert_Pin.Get,
@@ -243,7 +219,7 @@ package body Interrupt_Tests is
       Temp     : Celsius;
       A_Status : Ambient_Status;
 
-      use AUnit.Assertions;
+--      use AUnit.Assertions;
    begin
       Alert_Only_Critical (This   => Temp_Sensor_Device,
                            Status => Status);
@@ -255,15 +231,6 @@ package body Interrupt_Tests is
       Alert_All_Limits (This   => Temp_Sensor_Device,
                         Status => Status);
 
-      Assert (A_Status.GorE_Upper = False,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Lower.GorE_Upper /= False");
-      Assert (A_Status.Less_Than_Lower = False,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Lower.Less_Than_Lower /= False");
-      Assert (A_Status.GorE_Critical = False,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Lower.GorE_Critical /= False");
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
       --        Assert (Alert_Pin.Get,
@@ -280,7 +247,7 @@ package body Interrupt_Tests is
       Temp     : Celsius;
       A_Status : Ambient_Status;
 
-      use AUnit.Assertions;
+--      use AUnit.Assertions;
    begin
       Alert_Only_Critical (This   => Temp_Sensor_Device,
                            Status => Status);
@@ -296,15 +263,6 @@ package body Interrupt_Tests is
       Alert_All_Limits (This   => Temp_Sensor_Device,
                         Status => Status);
 
-      Assert (A_Status.GorE_Upper,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Higher.GorE_Upper /= True");
-      Assert (A_Status.Less_Than_Lower = False,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Higher.Less_Than_Lower /= False");
-      Assert (A_Status.GorE_Critical = False,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Higher.GorE_Critical /= False");
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
 --        Assert (Alert_Pin.Get = False,
@@ -321,7 +279,7 @@ package body Interrupt_Tests is
       Temp     : Celsius;
       A_Status : Ambient_Status;
 
-      use AUnit.Assertions;
+--      use AUnit.Assertions;
    begin
       Alert_Only_Critical (This   => Temp_Sensor_Device,
                            Status => Status);
@@ -340,15 +298,6 @@ package body Interrupt_Tests is
       Alert_All_Limits (This   => Temp_Sensor_Device,
                         Status => Status);
 
-      Assert (A_Status.GorE_Upper,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Critical.GorE_Upper /= True");
-      Assert (A_Status.Less_Than_Lower = False,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Critical.Less_Than_Lower/=False");
-      Assert (A_Status.GorE_Critical,
-              "Interrupt: "
-              & "Test_CriticalOnly_TA_Above_Critical.GorE_Critical /= True");
       Clear_Interrupt (This   => Temp_Sensor_Device,
                        Status => Status);
 --        Assert (Alert_Pin.Get = False,
